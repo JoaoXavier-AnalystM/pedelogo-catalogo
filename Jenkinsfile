@@ -33,16 +33,8 @@ pipeline {
             steps {
                 withKubeConfig([credentialsId: 'kubeconfig']) {
                 sh 'cat api.yaml | sed "s/{{BUILD_NUMBER}}/$BUILD_NUMBER/g" | kubectl apply -f -'
+                }
             }
         }
-    }
-}
-    post {
-        success {
-        slackSend(message: "sbmvn Pipeline is successfully completed.")
-    }
-        failure {
-        slackSend(message: "sbmvn Pipeline failed. Please check the logs.")
-    }
-}
+    }  
 }
