@@ -5,7 +5,7 @@ pipeline {
 
         stage('Get Source') {
             steps {
-                git url: 'https://github.com/JoaoXavier-AnalystM/pedelogo-catalogo.git', branch: 'master'
+                git url: 'https://github.com/JoaoXavier-AnalystM/pedelogo-catalogo.git', branch: 'main'
             }
         }
 
@@ -29,20 +29,18 @@ pipeline {
             }
         }
 
-         stage('Deploy Kubernetes') {
-            agent {
-                kubernetes {
-                    cloud 'kubernetes'
-                }
-            }
+        stage('Deploy Kubernetes') {
             environment {
                 tag_version = "${env.BUILD_ID}"
             }
-
             steps {
-                sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/api.yaml'
-                sh 'cat ./k8s/api.yaml'
-                kubernetesDeploy(configs: '**/k8s/**', kubeconfigId: 'kube')
+                withKubeConfig([credentialId: 'kubeconfig']){
+                    sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/api.yaml'
+                    sh 'cat ./k8s/api.yaml'
+                    sh 'kubectl apply -f ./k8s -R'
+
+                }
+                
             }
         }
     }
