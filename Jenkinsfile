@@ -1,6 +1,5 @@
 pipeline {
     agent any
-
     stages {
 
         stage('Get Source') {
@@ -25,14 +24,6 @@ pipeline {
                         dockerapp.push('latest')
                         dockerapp.push("${env.BUILD_ID}")
                     }
-                }
-            }
-        }
-
-        stage('Apply Kubernetes Files') {
-            steps {
-                withKubeConfig([credentialsId: 'kubeconfig']) {
-                sh 'cat api.yaml | sed "s/{{BUILD_NUMBER}}/$BUILD_NUMBER/g" | kubectl apply -f -'
                 }
             }
         }
