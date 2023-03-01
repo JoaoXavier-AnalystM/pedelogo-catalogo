@@ -29,19 +29,21 @@ pipeline {
             }
         }
 
-        stage('Deploy Kubernetes') {
-            environment {
-                tag_version = "${env.BUILD_ID}"
-            }
+        stage('Apply Kubernetes Files') {
             steps {
-                withKubeConfig([credentialId: 'kubeconfig']){
-                    sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/api.yaml'
-                    sh 'cat ./k8s/api.yaml'
-                    sh 'kubectl apply -f ./k8s -R'
-
-                }
-                
+                withKubeConfig([credentialsId: 'kubeconfig']) {
+                sh 'cat deployment.yaml | sed "s/{{BUILD_NUMBER}}/$BUILD_NUMBER/g" | kubectl apply -f -'
+                sh 'kubectl apply -f service.yaml'
             }
         }
     }
+}
+    post {
+        success {
+        slackSend(message: "sbmvn Pipeline is successfully completed.")
+    }
+        failure {
+        slackSend(message: "sbmvn Pipeline failed. Please check the logs.")
+    }
+}
 }
